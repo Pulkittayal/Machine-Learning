@@ -1,0 +1,191 @@
+import pandas as pd
+import numpy  as np
+import matplotlib.pyplot as plt
+
+path = 'https://s3-api.us-geo.objectstorage.softlayer.net/cf-courses-data/CognitiveClass/DA0101EN/automobileEDA.csv'
+df=pd.read_csv(path)
+df.head()
+
+# Linear Regression
+#Simple Linear Regression is a method to help us understand the relationship between two variables:
+#The predictor/independent variable (X)
+#The response/dependent variable (that we want to predict)(Y)
+#The result of Linear Regression is a linear function that predicts the response (dependent) variable as a function of the predictor
+#𝑌ℎ𝑎𝑡=𝑎+𝑏𝑋
+# a=intercept the value of Y when X is 0
+# b=slope the value with which Y changes when X increases by 1 unit
+from sklearn.linear_model import LinearRegression
+#Create the linear regression object
+lm=LinearRegression()
+lm
+LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
+         normalize=False)
+#How could Highway-mpg help us predict car price?
+#we will create a linear function with "highway-mpg" as the predictor variable and the "price" as the response variable.
+x=df[["highway-mpg"]]
+y=df[["price"]]
+#Fit the linear model using highway-mpg.
+lm.fit(x,y)
+LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
+         normalize=False)
+#We can output a prediction
+Yhat=lm.predict(x)
+Yhat[0:5]
+
+array([[16236.50464347],
+       [16236.50464347],
+       [17058.23802179],
+       [13771.3045085 ],
+       [20345.17153508]])
+
+# value of intercept
+lm.intercept_
+array([38423.30585816])
+# value of slope
+lm.coef_
+array([[-821.73337832]])
+# we get price=38423.30585816 - 821.73 * highway-mpg
+#Multiple Linear Regression
+z=df[["horsepower","curb-weight","engine-size","highway-mpg"]]
+lm.fit(z,df["price"])
+
+LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
+         normalize=False)
+Yhat=lm.predict(z)
+Yhat[0:5]
+array([13699.11161184, 13699.11161184, 19051.65470233, 10620.36193015,
+       15521.31420211])
+       
+lm.intercept_
+-15806.624626329227
+
+lm.coef_
+array([53.49574423,  4.70770099, 81.53026382, 36.05748882])
+
+#What is the linear function we get in this example?
+#Price = -15678.742628061467 + 52.65851272 x horsepower + 4.69878948 x curb-weight + 81.95906216 x engine-size + 33.58258185 x highway-mpg
+
+import seaborn as sns
+sns.regplot(x="highway-mpg",y="price",data=df)
+plt.ylim(0,)
+(0, 48271.65213927051)
+
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+sns.regplot(x="highway-mpg", y="price", data=df)
+plt.ylim(0,)
+(0, 48265.996487482866)
+
+#If the data is too far off from the line, this linear model might not be the best model for this data.
+width=12
+height=10
+plt.figure(figsize=(width,height))
+sns.regplot(x="peak-rpm",y="price",data=df)
+plt.ylim(0,)
+(0, 47422.919330307624)
+
+#Residual Plot
+#A good way to visualize the variance of the data is to use a residual plot.
+#The difference between the observed value (y) and the predicted value (Yhat) is called the residual (e). When we look at a regression plot, the residual is the distance from the data point to the fitted regression line.
+# If the points in a residual plot are randomly spread out around the x-axis, then a linear model is appropriate for the data. Why is that? Randomly spread out residuals means that the variance is constant, and thus the linear model is a good fit for this data.
+
+width=12
+height=10
+plt.figure(figsize=(width,height))
+sns.residplot(x="highway-mpg",y="price",data=df)
+plt.ylim(0,)
+(0, 22450.66845817669)
+
+#We can see from this residual plot that the residuals are not randomly spread around the x-axis, which leads us to believe that maybe a non-linear model is more appropriate for this data.
+df.corr()
+.width=12
+height=10
+plt.figure(figsize=(width,height))
+sns.residplot(x="engine-size",y="price",data=df)
+plt.ylim(0,)
+(0, 15646.476718569915)
+
+width=12
+height=10
+plt.figure(figsize=(width,height))
+sns.residplot(x="price",y="price",data=df)
+plt.ylim(0,)
+(0, 2.2976172082758594e-11)
+
+# For multiple linear Regression we use Distribution Plot.
+#Regression and Residual Plot is not used.
+
+width=12
+height=10
+plt.figure(figsize=(width,height))
+ax1=sns.distplot(df["price"],label="Actual Value",color="r",hist=False)
+sns.distplot(Yhat,label="Fitted value",color="b",hist=False)
+plt.xlabel("price")
+plt.ylabel("Proportion of cars")
+plt.title("Actual vs Fitted")
+plt.show()
+
+#Polynomial regression is a particular case of the general linear regression model or multiple linear regression model
+#Left
+#Measures for In-Sample Evaluation
+#When evaluating our models, not only do we want to visualize the results, 
+#but we also want a quantitative measure to determine how accurate the model is.
+#R^2 / R-squared
+#Mean Squared Error (MSE)
+# For Simple Linear Regression
+
+lm.fit(x,y)
+print("The R-square is:",lm.score(x,y))
+The R-square is: 0.4965911884339175
+#We can say that ~ 49.659% of the variation of the price is explained by this simple linear model "horsepower_fit".
+#MSE
+Yhat=lm.predict(x)
+print('The output of the first four predicted value is: ', Yhat[0:4])
+The output of the first four predicted value is:  [[16236.50464347]
+ [16236.50464347]
+ [17058.23802179]
+ [13771.3045085 ]]
+
+from sklearn.metrics import mean_squared_error
+mse=mean_squared_error(df["price"],Yhat)
+print("The mean square error of predicted and ctual value is:",mse)
+The mean square error of predicted and ctual value is: 31635042.944639895
+
+# for multiple linear regression
+
+lm.fit(z,df["price"])
+print("The R-square valjue is:",lm.score(z,df["price"]))
+The R-square valjue is: 0.8093562806577457
+
+#MSE
+Yhat_predict=lm.predict(z)
+print('The output of the first four predicted value is: ', Yhat_predict[0:4])
+The output of the first four predicted value is:  [13699.11161184 13699.11161184 19051.65470233 10620.36193015]
+mse1=mean_squared_error(df["price"],Yhat_predict)
+mse1
+11980366.870726492
+
+# for polynommial
+from sklearn.metrics import *
+#r_square=r2_score(y,p(x))
+#mean_squared_error(df['price'], p(x))
+#Prediction and Decision Making
+new_input=np.arange(1,100,1).reshape(-1,1)
+lm.fit(x,y)
+LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
+         normalize=False)
+yhat=lm.predict(new_input)
+yhat[0:5]
+array([[37601.57247984],
+       [36779.83910151],
+       [35958.10572319],
+       [35136.37234487],
+       [34314.63896655]])
+
+plt.plot(new_input,yhat)
+plt.show()
+
+#When comparing models, the model with the higher R-squared value is a better fit for the data.
+#When comparing models, the model with the smallest MSE value is a better fit for the data.
+
